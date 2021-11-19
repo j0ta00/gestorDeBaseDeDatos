@@ -48,10 +48,14 @@ public static void menuPrincipal(){
             }while(respuesta!=5);
         }
 
-        public static int realizarAccionSeleccionada(int respuesta,Statement query) throws SQLException{
+        public static int realizarAccionSeleccionada(int respuesta,Statement query){
         switch (respuesta) {
                 case 1: {
-                    opcionSelect(query);
+                    if(opcionSelect(query)){
+                        System.out.println("Consulta realizada con éxito");
+                    }else{
+                        System.out.println("Consulta fallida");
+                    }
                 }
                 break;
                 case 2:{
@@ -91,27 +95,34 @@ public static void menuPrincipal(){
         System.out.println("5) Salir");
     }
 
-    public static void opcionSelect(Statement query) throws SQLException {
+    public static boolean opcionSelect(Statement query) {
         ResultSet resultado;
         ResultSetMetaData rsmd;
+        boolean realizadoConExito=true;
         System.out.println("Escribe alguna consulta:");
-        resultado=query.executeQuery(teclado.nextLine());
-        while(resultado.next()){
-            rsmd=resultado.getMetaData();
-            for(int i=1;i<=rsmd.getColumnCount();i++) {
-                System.out.print(resultado.getString(i)+" ");
+        try {
+            resultado=query.executeQuery(teclado.nextLine());
+            while (resultado.next()) {
+                rsmd = resultado.getMetaData();
+                for (int i = 1; i <= rsmd.getColumnCount(); i++) {
+                    System.out.print(rsmd.getColumnName(i) + " " + resultado.getString(i) + " ");
+                }
+                System.out.println();
             }
-            System.out.println();
+        }catch(SQLException e){
+            realizadoConExito=false;
         }
-
+        return realizadoConExito;
     }
 
-    public static boolean optionDDL(Statement query) throws SQLException {
+    public static boolean optionDDL(Statement query){
         String consulta="";
         boolean modificacionRealizada;
         System.out.println("Escribe alguna consulta:");
+        consulta=teclado.nextLine();
         try {
-            modificacionRealizada = query.execute(consulta);
+            query.execute(consulta);
+            modificacionRealizada =true;
         }catch(SQLException e){
             modificacionRealizada=false;
         }
@@ -125,9 +136,8 @@ public static void menuPrincipal(){
         System.out.println("Escribe alguna consulta:");
         consulta=teclado.nextLine();
         try {
-            if (query.executeUpdate(consulta) != 0) {
-                modificacionRealizada = true;
-            }
+            query.executeUpdate(consulta);
+            modificacionRealizada = true;
         }catch(SQLException e){
             modificacionRealizada=false;
         }
