@@ -36,7 +36,7 @@ public static void menuPrincipal(){
                         miConexion = getConnection(configuracion.getProperty("URL"), configuracion.getProperty("USUARIO"), configuracion.getProperty("CLAVE"));
                         query = miConexion.createStatement();
                     }
-                    realizarAccionSeleccionada(respuesta,query);
+                    respuesta=realizarAccionSeleccionada(respuesta,query);
                 } catch (SQLException e) {
                     respuesta = 4;
                 } catch (FileNotFoundException e) {
@@ -48,7 +48,7 @@ public static void menuPrincipal(){
             }while(respuesta!=5);
         }
 
-        public static void realizarAccionSeleccionada(int respuesta,Statement query) throws SQLException{
+        public static int realizarAccionSeleccionada(int respuesta,Statement query) throws SQLException{
         switch (respuesta) {
                 case 1: {
                     opcionSelect(query);
@@ -71,13 +71,14 @@ public static void menuPrincipal(){
                 case 4: {
                     try(OutputStream os=new FileOutputStream(PROPERTIESFILEPATH)) {
                         optionModificarConexion(os);
+                        respuesta=0;
                     }catch (IOException e){
                         e.printStackTrace();
                     }
-                    respuesta=0;
                 }
                 break;
             }
+            return respuesta;
 
         }
 
@@ -107,19 +108,28 @@ public static void menuPrincipal(){
 
     public static boolean optionDDL(Statement query) throws SQLException {
         String consulta="";
+        boolean modificacionRealizada;
         System.out.println("Escribe alguna consulta:");
-        consulta=teclado.nextLine();
-        return query.execute(consulta);
+        try {
+            modificacionRealizada = query.execute(consulta);
+        }catch(SQLException e){
+            modificacionRealizada=false;
+        }
+        return modificacionRealizada;
     }
 
 
-    public static boolean optionDML(Statement query)throws SQLException{
+    public static boolean optionDML(Statement query){
         boolean modificacionRealizada=false;
         String consulta="";
         System.out.println("Escribe alguna consulta:");
         consulta=teclado.nextLine();
-        if(query.executeUpdate(consulta)!=0){
-            modificacionRealizada=true;
+        try {
+            if (query.executeUpdate(consulta) != 0) {
+                modificacionRealizada = true;
+            }
+        }catch(SQLException e){
+            modificacionRealizada=false;
         }
         return modificacionRealizada;
     }
